@@ -33,9 +33,10 @@ export interface ModalProps {
   onClose(): void;
   onOpen(): void;
   id?: string;
+  createNode(id: string, type: string): void;
 }
 
-function NodeSelector({ isOpen, onOpen, onClose }: ModalProps) {
+function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
   useEffect(() => {
     onOpen();
   }, []);
@@ -53,10 +54,12 @@ function NodeSelector({ isOpen, onOpen, onClose }: ModalProps) {
   const formik = useFormik({
     initialValues: {
       id: "",
-      operator: "",
+      operator: "BashOperator",
     },
     onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+      console.log(values)
+      createNode(values.id, values.operator);
+      onClose();
     },
   });
 
@@ -91,8 +94,9 @@ function NodeSelector({ isOpen, onOpen, onClose }: ModalProps) {
                   <Select
                     id="operator"
                     name="operator"
+                    defaultValue={"BashOperator"}
                     value={formik.values.operator}
-                    onChange={formik.handleChange}
+                    onSelect={formik.handleChange}
                   >
                     {operators.map((operator) => (
                       <option key={operator} value={operator}>

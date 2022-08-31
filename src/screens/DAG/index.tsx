@@ -10,7 +10,10 @@ import ReactFlow, {
   useReactFlow,
   Background,
 } from "react-flow-renderer";
-import TextUpdaterNode from "../../components/Nodes/BashOperator";
+import BashOperatorNode from "../../components/Nodes/BashOperator";
+import DummyOperatorNode from "../../components/Nodes/DummyOperator";
+import EmailOperatorNode from "../../components/Nodes/EmailOperator";
+import PythonOperatorNode from "../../components/Nodes/PythonOperator";
 import NodeSelector from "../../components/NodeSelector";
 
 const initialNodes: Node[] = [
@@ -20,13 +23,14 @@ const initialNodes: Node[] = [
     data: { label: "Start" },
     position: { x: 250, y: 5 },
   },
-  { id: "2", data: { label: "Bash Operator" }, position: { x: 100, y: 100 } },
+  { id: "2", type: "BashOperator", data: { id: "2", label: "Bash Operator" }, position: { x: 100, y: 100 } },
   {
     id: "3",
-    data: { label: "Kubernetes Pod Operator" },
+    type: "DummyOperator",
+    data: { label: "Dummy Operator" },
     position: { x: 400, y: 100 },
   },
-  { id: "4", data: { label: "Python Operator" }, position: { x: 400, y: 200 } },
+  { id: "4", type: "PythonOperator", data: { label: "Python Operator" }, position: { x: 400, y: 200 } },
 ];
 
 const initialEdges: Edge[] = [
@@ -40,7 +44,7 @@ const initialEdges: Edge[] = [
 
 let nodeId = 0;
 
-const nodeTypes = { textUpdater: TextUpdaterNode };
+const nodeTypes = { BashOperator: BashOperatorNode, Email: EmailOperatorNode, PythonOperator: PythonOperatorNode, DummyOperator: DummyOperatorNode };
 
 const DAG = () => {
   const reactFlowInstance = useReactFlow();
@@ -67,13 +71,30 @@ const DAG = () => {
     reactFlowInstance.addNodes(newNode);
   }, []);
 
+  const createNode = (id: string, type: string) => {
+    console.log("Creating node");
+    const newNode = {
+      id,
+      position: {
+        x: Math.random() * 500,
+        y: Math.random() * 500,
+      },
+      data: {
+        label: `Node ${id}`,
+        id,
+      },
+      type: "BashOperator",
+    };
+    reactFlowInstance.addNodes(newNode);
+    console.log(reactFlowInstance.getNodes());
+  };
+
   useEffect(() => {
     onClose();
   }, []);
 
   const getState = useCallback(() => {
     console.log(reactFlowInstance.toObject());
-    // save to file
   }, [nodes, edges]);
 
   const defaultEdgeOptions = { animated: true };
@@ -110,7 +131,12 @@ const DAG = () => {
       >
         Get State
       </Button>
-      <NodeSelector isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
+      <NodeSelector
+        isOpen={isOpen}
+        onOpen={onOpen}
+        onClose={onClose}
+        createNode={createNode}
+      />
     </Box>
   );
 };
