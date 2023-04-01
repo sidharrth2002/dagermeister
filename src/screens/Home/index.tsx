@@ -1,13 +1,12 @@
 import {
-  Flex,
+  Button,
   Container,
+  Flex,
   Heading,
   Stack,
   Text,
-  Button,
-  Icon,
-  IconProps,
 } from "@chakra-ui/react";
+
 import { Illustration } from "../../components/Illustration";
 
 export default function Home() {
@@ -35,8 +34,9 @@ export default function Home() {
           DAGs
         </Heading>
         <Text color={"black.500"} maxW={"3xl"}>
-          If you've ever struggled with visualising DAGs or if you've always reached for a pen and paper,
-          this is the tool for you. Daggermeister allows you to intuitively build Airflow DAGs through a drag-and-drop
+          If you've ever struggled with visualising DAGs or if you've always
+          reached for a pen and paper, this is the tool for you. Daggermeister
+          allows you to intuitively build Airflow DAGs through a drag-and-drop
           interface.
         </Text>
         <Stack spacing={6} direction={"row"}>

@@ -1,6 +1,7 @@
 import { Box, Text } from '@chakra-ui/react';
+import { Handle, NodeProps, Position } from 'react-flow-renderer';
+
 import { useCallback } from 'react';
-import { Handle, Position, NodeProps } from 'react-flow-renderer';
 
 const handleStyle = { left: 10 };
 
@@ -12,13 +13,16 @@ function DummyOperatorNode({ data }: NodeProps) {
   return (
     <Box onClick={() => {
       data.newProperty = "1234"
-    }} backgroundColor="white" fontSize={10} padding={3}>
+    }} fontSize={10} padding={3}
+    border="0.5px solid"
+    borderRadius={5}
+    >
     <Handle type="target" position={Position.Top} />
       <Text textAlign={"center"}>Dummy Operator</Text>
-      <div>
-        <label htmlFor="text">Text:</label>
-        <input id="text" name="text" onChange={onChange} />
-      </div>
+      <Text
+        style={{ fontSize: 8 }}
+        fontStyle="italic"
+      >I am supposed to do nothing.</Text>
       <Handle type="source" position={Position.Bottom} id="a" />
       <Handle type="source" position={Position.Bottom} id="b" style={handleStyle} />
     </Box>

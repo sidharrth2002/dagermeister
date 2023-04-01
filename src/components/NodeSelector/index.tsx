@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   FormControl,
@@ -12,20 +13,23 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
+  RadioGroup,
+  Text,
   VStack,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
 import {
   Field,
+  FieldInputProps,
+  FieldProps,
   Form,
   Formik,
-  FieldProps,
   FormikFormProps,
-  FieldInputProps,
   FormikProps,
   useFormik,
 } from "formik";
+import React, { useEffect, useState } from "react";
+
+import Select from "react-select";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -35,6 +39,12 @@ export interface ModalProps {
   id?: string;
   createNode(id: string, type: string): void;
 }
+const AVATARS = [
+  { name: "Kat", image: "https://randomuser.me/api/portraits/women/44.jpg" },
+  { name: "Kevin", image: "https://randomuser.me/api/portraits/men/86.jpg" },
+  { name: "Andy", image: "https://randomuser.me/api/portraits/men/29.jpg" },
+  { name: "Jess", image: "https://randomuser.me/api/portraits/women/95.jpg" },
+];
 
 function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
   useEffect(() => {
@@ -54,10 +64,13 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
   const formik = useFormik({
     initialValues: {
       id: "",
-      operator: "BashOperator",
+      operator: "",
     },
     onSubmit: (values) => {
-      console.log(values)
+      console.log('printing values')
+      console.log(values);
+      console.log(values.id);
+      console.log(values.operator);
       createNode(values.id, values.operator);
       onClose();
     },
@@ -92,18 +105,27 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
                 <FormControl>
                   <FormLabel htmlFor="operator">Operator</FormLabel>
                   <Select
-                    id="operator"
-                    name="operator"
-                    defaultValue={"BashOperator"}
-                    value={formik.values.operator}
-                    onSelect={formik.handleChange}
-                  >
-                    {operators.map((operator) => (
-                      <option key={operator} value={operator}>
-                        {operator}
-                      </option>
-                    ))}
-                  </Select>
+                    options={operators.map((operator) => ({
+                      label: operator,
+                      value: operator,
+                    }))}
+                    onChange={(value) => {
+                      console.log(value);
+                      formik.setFieldValue("operator", value?.value);
+                    }}
+                  />
+
+
+                  {/* <Select
+                    tagVariant="solid"
+                    options={operators.map((operator) => ({
+                      label: operator,
+                      value: operator,
+                    }))}
+                    onChange={(value) => {
+                      formik.setFieldValue("operator", value?.value);
+                    }}
+                  /> */}
                 </FormControl>
                 <Button type="submit" colorScheme="purple" width="full">
                   Create

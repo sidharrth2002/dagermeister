@@ -14,6 +14,11 @@ const args = {
         "mime_subtype": "string",
         "mime_charset": "string",
         "custom_headers": "string",
+    },
+    "PythonOperator": {
+        "task_id": "string",
+        "python_callable": "def main():",
+        "op_kwargs": "string",
     }
 }
 

@@ -12,13 +12,15 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  useDisclosure,
   VStack,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { useFormik } from "formik";
+import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { useCallback, useRef } from "react";
-import { Handle, Position, NodeProps } from "react-flow-renderer";
+
+import CodeEditor from "@uiw/react-textarea-code-editor";
 import args from "../../../extra/args";
+import { useFormik } from "formik";
 
 const handleStyle = { left: 10 };
 
@@ -40,7 +42,13 @@ function BashOperatorNode({ data }: NodeProps) {
   });
 
   return (
-    <Box onClick={onOpen} backgroundColor="white" fontSize={10} padding={3}>
+    <Box
+      onClick={onOpen}
+      fontSize={10}
+      padding={3}
+      border="0.5px solid"
+      borderRadius={5}
+    >
       <Handle type="target" position={Position.Top} />
       <Text textAlign={"center"} fontStyle="italic">
         # {data.id}
@@ -62,19 +70,41 @@ function BashOperatorNode({ data }: NodeProps) {
             <ModalBody>
               <VStack spacing={4} align="flex-start">
                 {Object.keys(args.BashOperator).map((op) => {
-                  return (
-                    <FormControl>
-                      <FormLabel htmlFor={op}>{op}</FormLabel>
-                      <Input
-                        id={op}
-                        name={op}
-                        type="text"
-                        variant="filled"
-                        onChange={formik.handleChange}
-                        value={formik.getFieldMeta(op).value}
-                      />
-                    </FormControl>
-                  );
+                  if (op === "bash_command") {
+                    return (
+                      <FormControl>
+                        <FormLabel htmlFor={op}>{op}</FormLabel>
+                        <CodeEditor
+                          value={formik.getFieldMeta(op).value}
+                          language="bash"
+                          placeholder="Please enter bash code."
+                          onChange={(evn) => {
+                            formik.setFieldValue(op, evn.target.value);
+                          }}
+                          padding={15}
+                          style={{
+                            fontSize: 12,
+                            fontFamily:
+                              "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+                          }}
+                        />
+                      </FormControl>
+                    );
+                  } else {
+                    return (
+                      <FormControl>
+                        <FormLabel htmlFor={op}>{op}</FormLabel>
+                        <Input
+                          id={op}
+                          name={op}
+                          type="text"
+                          variant="filled"
+                          onChange={formik.handleChange}
+                          value={formik.getFieldMeta(op).value}
+                        />
+                      </FormControl>
+                    );
+                  }
                 })}
               </VStack>
             </ModalBody>
