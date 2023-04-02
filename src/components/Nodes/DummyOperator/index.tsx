@@ -18,6 +18,10 @@ function DummyOperatorNode({ data }: NodeProps) {
     borderRadius={5}
     >
     <Handle type="target" position={Position.Top} />
+    <Text textAlign={"center"}>
+        {data.id}
+      </Text>
+
       <Text textAlign={"center"}>Dummy Operator</Text>
       <Text
         style={{ fontSize: 8 }}

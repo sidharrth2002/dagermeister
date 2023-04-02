@@ -1,0 +1,28 @@
+dag:
+  concurrency: 1
+  dagrun_timeout_sec: 60
+  default_args:
+    end_date: '2018-01-05'
+    owner: example_owner
+    retries: 1
+    retry_delay_sec: 300
+    start_date: '2018-01-01'
+  default_view: tree
+  description: this is an example dag!
+  max_active_runs: 1
+  orientation: LR
+  schedule_interval: 0 3 * * *
+  tasks:
+    '2':
+      dependencies:
+      - '1'
+      operator: BashOperator
+      param1: sdfsd
+      param2: sdfsdf
+    '3':
+      dependencies:
+      - '1'
+      operator: DummyOperator
+    '4':
+      dependencies: []
+      operator: PythonOperator

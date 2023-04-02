@@ -11,7 +11,7 @@ import {
   ModalOverlay,
   Text,
   VStack,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { useCallback, useRef } from "react";
@@ -26,14 +26,12 @@ function PythonOperatorNode({ data }: NodeProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef(null);
 
-  const onChange = useCallback((evt: any) => {
-    console.log(evt.target.value);
-  }, []);
-
   const formik = useFormik({
     initialValues: data.params || args.PythonOperator,
     onSubmit: (values) => {
       onClose();
+      console.log("printing values");
+      console.log(values);
       // set properties on data
       data.params = values;
     },
@@ -48,7 +46,12 @@ function PythonOperatorNode({ data }: NodeProps) {
       borderRadius={5}
     >
       <Handle type="target" position={Position.Top} />
-      <Text textAlign={"center"}>Python Operator</Text>
+      <Text textAlign={"center"}>
+        <Text as="span" fontSize="0.8em" color="green">
+          {data.id}
+        </Text>
+      </Text>
+      <Text textAlign={"center"}>Python Operator 🐍</Text>
       <Handle type="source" position={Position.Bottom} id="a" />
       <Handle
         type="source"
@@ -61,39 +64,51 @@ function PythonOperatorNode({ data }: NodeProps) {
         <ModalContent>
           <ModalHeader>Python Operator</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing={4} align="flex-start">
-              {Object.keys(args.PythonOperator).map((key) => {
-                if (key === "python_callable") {
+          <form onSubmit={formik.handleSubmit}>
+            <ModalBody>
+              <VStack spacing={4} align="flex-start">
+                {Object.keys(args.PythonOperator).map((key) => {
+                  if (key === "python_callable" || key === "op_kwargs") {
+                    return (
+                      <Box key={key} width="100%">
+                        <Text mb={3}>{key}</Text>
+                        <CodeEditor
+                          language={
+                            key === "python_callable" ? "python" : "json"
+                          }
+                          value={formik.getFieldMeta(key).value}
+                          onChange={(evn) => {
+                            formik.setFieldValue(key, evn.target.value);
+                          }}
+                          name={key}
+                          style={{
+                            fontSize: 14,
+                            fontFamily:
+                              "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+                          }}
+                        />
+                      </Box>
+                    );
+                  }
                   return (
-                    <Box key={key} width="100%">
-                      <Text mb={3}>{key}</Text>
-                      <CodeEditor
-                        language="python"
+                    <Box key={key}>
+                      <Text>{key}</Text>
+                      <Input
                         value={formik.getFieldMeta(key).value}
                         onChange={formik.handleChange}
                         name={key}
-                        style={{ height: 200, width: '100%', border: '1px solid #ccc' }}
                       />
                     </Box>
                   );
-                }
-                return (
-                  <Box key={key}>
-                    <Text>{key}</Text>
-                    <Input
-                      value={formik.values[key]}
-                      onChange={formik.handleChange}
-                      name={key}
-                    />
-                  </Box>
-                );
-              })}
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose}>Close</Button>
-          </ModalFooter>
+                })}
+              </VStack>
+            </ModalBody>
+            <ModalFooter display={"flex"} justifyContent={"space-between"}>
+              <Button type="submit" onClick={onClose}>
+                Save
+              </Button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </Box>

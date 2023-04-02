@@ -28,10 +28,6 @@ function BashOperatorNode({ data }: NodeProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef(null);
 
-  const onChange = useCallback((evt: any) => {
-    console.log(evt.target.value);
-  }, []);
-
   const formik = useFormik({
     initialValues: data.params || args.BashOperator,
     onSubmit: (values) => {
@@ -50,8 +46,10 @@ function BashOperatorNode({ data }: NodeProps) {
       borderRadius={5}
     >
       <Handle type="target" position={Position.Top} />
-      <Text textAlign={"center"} fontStyle="italic">
-        # {data.id}
+      <Text textAlign={"center"}>
+        <Text as="span" fontSize="0.8em" color="green">
+          {data.id}
+        </Text>
       </Text>
       <Text textAlign={"center"}>Bash Operator</Text>
       <Handle type="source" position={Position.Bottom} id="a" />

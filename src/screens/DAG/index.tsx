@@ -1,14 +1,12 @@
-import { Box, Button, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, HStack, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
 import {
   Drawer,
   DrawerBody,
   DrawerCloseButton,
   DrawerContent,
-  DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
 } from "@chakra-ui/react";
-import React, { useCallback, useEffect } from "react";
 import ReactFlow, {
   Background,
   Connection,
@@ -19,12 +17,15 @@ import ReactFlow, {
   useNodesState,
   useReactFlow,
 } from "react-flow-renderer";
+import { useCallback, useEffect, useState } from "react";
 
 import BashOperatorNode from "../../components/Nodes/BashOperator";
+import Crontab from "../../components/Crontab";
 import DummyOperatorNode from "../../components/Nodes/DummyOperator";
 import EmailOperatorNode from "../../components/Nodes/EmailOperator";
 import NodeSelector from "../../components/NodeSelector";
 import PythonOperatorNode from "../../components/Nodes/PythonOperator";
+import { getDag } from "../../api/dag";
 
 const initialNodes: Node[] = [
   {
@@ -72,31 +73,23 @@ const nodeTypes = {
 };
 
 const DAG = () => {
+  const [dagData, setDagData] = useState({});
   const reactFlowInstance = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges]
   );
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: drawerisOpen, onOpen: draweronOpen, onClose: draweronClose } = useDisclosure()
-
-
-  const onClick = useCallback(() => {
-    const id = `${++nodeId}`;
-    const newNode = {
-      id,
-      position: {
-        x: Math.random() * 500,
-        y: Math.random() * 500,
-      },
-      data: {
-        label: `Node ${id}`,
-      },
-    };
-    reactFlowInstance.addNodes(newNode);
-  }, []);
+  const {
+    isOpen: drawerisOpen,
+    onOpen: draweronOpen,
+    onClose: draweronClose,
+  } = useDisclosure();
+  const [downloadURL, setDownloadURL] = useState("");
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   const createNode = (id: string, type: string) => {
     console.log("Creating node");
@@ -105,8 +98,8 @@ const DAG = () => {
       key: id,
       id,
       position: {
-        x: Math.random() * 500,
-        y: Math.random() * 500,
+        x: Math.random() * 300,
+        y: Math.random() * 300,
       },
       data: {
         label: `Node ${id}`,
@@ -114,7 +107,8 @@ const DAG = () => {
       },
       type: type,
     };
-    reactFlowInstance.addNodes(newNode);
+    nodes.push(newNode);
+    // reactFlowInstance.addNodes(newNode);
     console.log(reactFlowInstance.getNodes());
   };
 
@@ -131,66 +125,107 @@ const DAG = () => {
     );
   }, [reactFlowInstance]);
 
+  useEffect(() => {
+    if (downloadURL) {
+      const link = document.createElement("a");
+      link.href = downloadURL;
+      link.setAttribute("download", "dag.py");
+      document.body.appendChild(link);
+      link.click();
+    }
+  }, [downloadURL]);
+
   const getState = useCallback(() => {
     draweronOpen();
-    console.log(reactFlowInstance.toObject());
+    console.log(nodes);
     // show state in modal
   }, [nodes, edges]);
 
   const defaultEdgeOptions = { animated: true };
 
   return (
-    <Box height={"100vh"} width={"1000"} position={"relative"}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-        defaultEdgeOptions={defaultEdgeOptions}
-        nodeTypes={nodeTypes}
-      >
-        <Background />
-      </ReactFlow>
-      <Button
-        position={"absolute"}
-        zIndex={100000}
-        top={20}
-        left={20}
-        onClick={() => onOpen()}
-      >
-        Add Node
-      </Button>
-      <Button
-        position={"absolute"}
-        zIndex={100000}
-        top={40}
-        left={20}
-        onClick={getState}
-      >
-        Get State
-      </Button>
-      <NodeSelector
-        isOpen={isOpen}
-        onOpen={onOpen}
-        onClose={onClose}
-        createNode={createNode}
-      />
+      <Box height={"100vh"} width={"1000"} position={"relative"}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+          defaultEdgeOptions={defaultEdgeOptions}
+          nodeTypes={nodeTypes}
+        >
+          <Background />
+        </ReactFlow>
+        <HStack
+          width={"90%"}
+          position={"absolute"}
+          zIndex={1000}
+          top={10}
+          left={10}
+          justifyContent={"space-between"}
+        >
+          <HStack spacing={10}>
+            <Button onClick={() => onOpen()}>Add Node</Button>
+            <Button
+              // make button download file
+              zIndex={100000}
+              onClick={async () => {
+                  setLoading(true);
+                  toast({
+                    title: "The engines are running",
+                    description: "Your DAG is being generated",
+                    status: "success",
+                    duration: 1000,
+                    isClosable: true,
+                  });
+                  const url = await getDag(reactFlowInstance.toObject());
 
-      <Drawer onClose={draweronClose} isOpen={drawerisOpen} size={"md"}>
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader>{`DAG Structure ⚙️`}</DrawerHeader>
-          <DrawerBody>
-            <Box>
-              <pre>{JSON.stringify(reactFlowInstance.toObject(), null, 2)}</pre>
-            </Box>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </Box>
+                  toast({
+                    title: "Formatting your file",
+                    description: "Your DAG is being formatted",
+                    status: "success",
+                    duration: 1000,
+                    isClosable: true,
+                  });
+                  setDownloadURL(url);
+                  toast({
+                    title: "Your file is ready",
+                    description: "Your DAG is being formatted",
+                    status: "success",
+                    duration: 1000,
+                    isClosable: true,
+                  });
+              }}
+            >
+              {downloadURL ? "⬇️ Download" : loading ? <Spinner /> : "Download"}
+            </Button>
+          </HStack>
+          <Button onClick={getState}>Settings ⚙️</Button>
+        </HStack>
+        <NodeSelector
+          isOpen={isOpen}
+          onOpen={onOpen}
+          onClose={onClose}
+          createNode={createNode}
+        />
+
+        <Drawer onClose={draweronClose} isOpen={drawerisOpen} size={"lg"}>
+          <DrawerOverlay />
+          <DrawerContent zIndex={100000}>
+            <DrawerCloseButton />
+            <DrawerHeader>{`DAG Engineering ⚙️`}</DrawerHeader>
+            <DrawerBody>
+              <Crontab setDagData={setDagData} />
+              <Box backgroundColor={"gray.100"} p={4} borderRadius={10}>
+                <pre>
+                  {JSON.stringify(reactFlowInstance.toObject(), null, 2)}
+                </pre>
+              </Box>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      </Box>
   );
 };
 

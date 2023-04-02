@@ -1,24 +1,24 @@
 const args = {
     "BashOperator": {
-        "task_id": "string",
-        "bash_command": "string",
-        "env": "string",
+        "task_id": "",
+        "bash_command": "",
+        "env": "",
     },
     "Email": {
-        "task_id": "string",
-        "to": "string",
-        "html_content": "string",
-        "files": "string",
-        "cc": "string",
-        "bcc": "string",
-        "mime_subtype": "string",
-        "mime_charset": "string",
-        "custom_headers": "string",
+        "task_id": "",
+        "to": "",
+        "html_content": "",
+        "files": "",
+        "cc": "",
+        "bcc": "",
+        "mime_subtype": "",
+        "mime_charset": "",
+        "custom_headers": "",
     },
     "PythonOperator": {
-        "task_id": "string",
+        "task_id": "",
         "python_callable": "def main():",
-        "op_kwargs": "string",
+        "op_kwargs": "",
     }
 }
 
