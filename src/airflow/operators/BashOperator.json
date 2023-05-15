@@ -1,0 +1,12 @@
+{
+    "name": "BashOperator",
+    "version": "1.0",
+    "description": "Use the BashOperator to execute commands in a Bash shell.",
+    "params": {
+        "bash_command": {
+            "type": "string",
+            "required": true,
+            "defaultValue": "echo \"Hello World\""
+        }
+    }
+}

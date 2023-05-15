@@ -1,0 +1,22 @@
+{
+    "name": "PythonOperator",
+    "version": "1.0.0",
+    "params": {
+        "python_callable": {
+            "type": "code",
+            "required": true
+        },
+        "op_kwargs": {
+            "type": "object",
+            "required": false
+        },
+        "provide_context": {
+            "type": "boolean",
+            "required": false
+        },
+        "templates_dict": {
+            "type": "object",
+            "required": false
+        }
+    }
+}

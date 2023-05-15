@@ -9,7 +9,7 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 // function to check if cron expression is valid
 const isValidCron = (cron: string) => {

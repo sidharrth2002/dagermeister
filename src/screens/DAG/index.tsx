@@ -1,4 +1,11 @@
-import { Box, Button, HStack, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  Spinner,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
 import {
   Drawer,
   DrawerBody,
@@ -6,12 +13,12 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  Text,
 } from "@chakra-ui/react";
 import ReactFlow, {
   Background,
   Connection,
-  Edge,
-  Node,
+  MarkerType,
   addEdge,
   useEdgesState,
   useNodesState,
@@ -19,58 +26,18 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { useCallback, useEffect, useState } from "react";
 
-import BashOperatorNode from "../../components/Nodes/BashOperator";
 import Crontab from "../../components/Crontab";
-import DummyOperatorNode from "../../components/Nodes/DummyOperator";
-import EmailOperatorNode from "../../components/Nodes/EmailOperator";
 import NodeSelector from "../../components/NodeSelector";
-import PythonOperatorNode from "../../components/Nodes/PythonOperator";
+import NodeFactory from "../../components/Nodes/NodeFactory";
 import { getDag } from "../../api/dag";
+import operators from "../../components/Nodes/alloperators";
+import { NodeTypes } from "../../types";
+import { initialEdges, initialNodes } from "./sample";
 
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    type: "input",
-    data: { label: "Start" },
-    position: { x: 250, y: 5 },
-  },
-  {
-    id: "2",
-    type: "BashOperator",
-    data: { id: "2", label: "Bash Operator" },
-    position: { x: 100, y: 100 },
-  },
-  {
-    id: "3",
-    type: "DummyOperator",
-    data: { label: "Dummy Operator" },
-    position: { x: 400, y: 100 },
-  },
-  {
-    id: "4",
-    type: "PythonOperator",
-    data: { label: "Python Operator" },
-    position: { x: 400, y: 200 },
-  },
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: "e1-2",
-    source: "1",
-    target: "2",
-  },
-  { id: "e1-3", source: "1", target: "3" },
-];
-
-let nodeId = 0;
-
-const nodeTypes = {
-  BashOperator: BashOperatorNode,
-  Email: EmailOperatorNode,
-  PythonOperator: PythonOperatorNode,
-  DummyOperator: DummyOperatorNode,
-};
+const nodeTypes: NodeTypes = {};
+for (const [key, value] of Object.entries(operators)) {
+  nodeTypes[key] = NodeFactory(key);
+}
 
 const DAG = () => {
   const [dagData, setDagData] = useState({});
@@ -78,7 +45,7 @@ const DAG = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    (connection: Connection) => setEdges((e) => addEdge(connection, e)),
     [setEdges]
   );
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -92,8 +59,6 @@ const DAG = () => {
   const toast = useToast();
 
   const createNode = (id: string, type: string) => {
-    console.log("Creating node");
-    console.log(type);
     const newNode = {
       key: id,
       id,
@@ -109,7 +74,6 @@ const DAG = () => {
     };
     nodes.push(newNode);
     // reactFlowInstance.addNodes(newNode);
-    console.log(reactFlowInstance.getNodes());
   };
 
   useEffect(() => {
@@ -137,95 +101,134 @@ const DAG = () => {
 
   const getState = useCallback(() => {
     draweronOpen();
-    console.log(nodes);
+
     // show state in modal
   }, [nodes, edges]);
 
-  const defaultEdgeOptions = { animated: true };
+  const defaultEdgeOptions = {
+    animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 20,
+      color: "green",
+    },
+    style: {
+      strokeWidth: 1.5,
+      stroke: "green",
+    },
+  };
+
+  // add keybindings
+  // when cmd + n is pressed, open model through onOpen
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey && event.key === "k") {
+        onOpen();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onOpen]);
 
   return (
-      <Box height={"100vh"} width={"1000"} position={"relative"}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-          defaultEdgeOptions={defaultEdgeOptions}
-          nodeTypes={nodeTypes}
-        >
-          <Background />
-        </ReactFlow>
-        <HStack
-          width={"90%"}
-          position={"absolute"}
-          zIndex={1000}
-          top={10}
-          left={10}
-          justifyContent={"space-between"}
-        >
-          <HStack spacing={10}>
-            <Button onClick={() => onOpen()}>Add Node</Button>
-            <Button
-              // make button download file
-              zIndex={100000}
-              onClick={async () => {
-                  setLoading(true);
-                  toast({
-                    title: "The engines are running",
-                    description: "Your DAG is being generated",
-                    status: "success",
-                    duration: 1000,
-                    isClosable: true,
-                  });
-                  const url = await getDag(reactFlowInstance.toObject());
+    <Box height={"100vh"} width={"1000"} position={"relative"}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        fitView
+        defaultEdgeOptions={defaultEdgeOptions}
+        nodeTypes={nodeTypes}
+      >
+        <Background />
+      </ReactFlow>
+      <HStack
+        width={"90%"}
+        position={"absolute"}
+        zIndex={1000}
+        top={10}
+        left={10}
+        justifyContent={"space-between"}
+      >
+        <HStack spacing={10}>
+          <Button onClick={() => onOpen()}>Add Node</Button>
+          <Button
+            // make button download file
+            zIndex={100000}
+            onClick={async () => {
+              setLoading(true);
+              toast({
+                title: "The engines are running",
+                description: "Your DAG is being generated",
+                status: "success",
+                duration: 1000,
+                isClosable: true,
+              });
+              const url = await getDag(reactFlowInstance.toObject());
 
-                  toast({
-                    title: "Formatting your file",
-                    description: "Your DAG is being formatted",
-                    status: "success",
-                    duration: 1000,
-                    isClosable: true,
-                  });
-                  setDownloadURL(url);
-                  toast({
-                    title: "Your file is ready",
-                    description: "Your DAG is being formatted",
-                    status: "success",
-                    duration: 1000,
-                    isClosable: true,
-                  });
-              }}
-            >
-              {downloadURL ? "⬇️ Download" : loading ? <Spinner /> : "Download"}
-            </Button>
-          </HStack>
-          <Button onClick={getState}>Settings ⚙️</Button>
+              toast({
+                title: "Formatting your file",
+                description: "Your DAG is being formatted",
+                status: "success",
+                duration: 1000,
+                isClosable: true,
+              });
+              setDownloadURL(url);
+              toast({
+                title: "Your file is ready",
+                description: "Your DAG is being formatted",
+                status: "success",
+                duration: 1000,
+                isClosable: true,
+              });
+            }}
+          >
+            {downloadURL ? "⬇️ Download" : loading ? <Spinner /> : "Download"}
+          </Button>
         </HStack>
-        <NodeSelector
-          isOpen={isOpen}
-          onOpen={onOpen}
-          onClose={onClose}
-          createNode={createNode}
-        />
+        <Button onClick={getState}>Settings ⚙️</Button>
+      </HStack>
+      <HStack position={"absolute"} zIndex={1000} bottom={10} left={10}>
+        <HStack>
+          <Text
+            fontSize={20}
+            border={"0.4px solid"}
+            borderColor={"green.300"}
+            padding={"0.4rem"}
+            borderRadius={10}
+            boxShadow={"0px 0px 10px 0px rgba(0,0,0,0.15)"}
+          >
+            ⌘
+          </Text>
+          <Text fontSize={20}>+ K to become a power user</Text>
+        </HStack>
+      </HStack>
+      <NodeSelector
+        isOpen={isOpen}
+        onOpen={onOpen}
+        onClose={onClose}
+        createNode={createNode}
+        existingIds={nodes.map((node) => node.id)}
+      />
 
-        <Drawer onClose={draweronClose} isOpen={drawerisOpen} size={"lg"}>
-          <DrawerOverlay />
-          <DrawerContent zIndex={100000}>
-            <DrawerCloseButton />
-            <DrawerHeader>{`DAG Engineering ⚙️`}</DrawerHeader>
-            <DrawerBody>
-              <Crontab setDagData={setDagData} />
-              <Box backgroundColor={"gray.100"} p={4} borderRadius={10}>
-                <pre>
-                  {JSON.stringify(reactFlowInstance.toObject(), null, 2)}
-                </pre>
-              </Box>
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
-      </Box>
+      <Drawer onClose={draweronClose} isOpen={drawerisOpen} size={"lg"}>
+        <DrawerOverlay />
+        <DrawerContent zIndex={100000}>
+          <DrawerCloseButton />
+          <DrawerHeader>{`DAG Engineering ⚙️`}</DrawerHeader>
+          <DrawerBody>
+            <Crontab setDagData={setDagData} />
+            <Box backgroundColor={"gray.100"} p={4} borderRadius={10}>
+              <pre>{JSON.stringify(reactFlowInstance.toObject(), null, 2)}</pre>
+            </Box>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </Box>
   );
 };
 

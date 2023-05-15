@@ -1,0 +1,40 @@
+{
+    "name": "EmailOperator",
+    "version": "1.0.0",
+    "summary": "EmailOperator",
+    "description": "EmailOperator",
+    "params": {
+        "to": {
+            "type": "string",
+            "required": true
+        },
+        "html_content": {
+            "type": "string",
+            "required": true
+        },
+        "files": {
+            "type": "file",
+            "required": false
+        },
+        "cc": {
+            "type": "string",
+            "required": false
+        },
+        "bcc": {
+            "type": "string",
+            "required": false
+        },
+        "mime_subtype": {
+            "type": "string",
+            "required": false
+        },
+        "mime_charset": {
+            "type": "string",
+            "required": false
+        },
+        "custom_headers": {
+            "type": "string",
+            "required": false
+        }
+    }
+}

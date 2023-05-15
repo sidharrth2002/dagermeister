@@ -1,0 +1,1 @@
+This folder houses Airflow operator configurations, periodically updated based on the latest stable version of Airflow.

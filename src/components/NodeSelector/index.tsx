@@ -1,35 +1,21 @@
 import {
-  Box,
   Button,
-  Checkbox,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
-  ModalFooter,
   ModalHeader,
   ModalOverlay,
-  RadioGroup,
-  Text,
   VStack,
 } from "@chakra-ui/react";
-import {
-  Field,
-  FieldInputProps,
-  FieldProps,
-  Form,
-  Formik,
-  FormikFormProps,
-  FormikProps,
-  useFormik,
-} from "formik";
+import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
 
 import Select from "react-select";
+import operatorOptions from "../Nodes/alloperators";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -38,15 +24,16 @@ export interface ModalProps {
   onOpen(): void;
   id?: string;
   createNode(id: string, type: string): void;
+  existingIds: string[];
 }
-const AVATARS = [
-  { name: "Kat", image: "https://randomuser.me/api/portraits/women/44.jpg" },
-  { name: "Kevin", image: "https://randomuser.me/api/portraits/men/86.jpg" },
-  { name: "Andy", image: "https://randomuser.me/api/portraits/men/29.jpg" },
-  { name: "Jess", image: "https://randomuser.me/api/portraits/women/95.jpg" },
-];
 
-function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
+function NodeSelector({
+  isOpen,
+  onOpen,
+  onClose,
+  createNode,
+  existingIds,
+}: ModalProps) {
   useEffect(() => {
     onOpen();
   }, []);
@@ -54,12 +41,7 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
   const initialRef = React.useRef(null);
   const finalRef = React.useRef(null);
 
-  const [operators, setOperators] = useState([
-    "BashOperator",
-    "PythonOperator",
-    "KubernetesPodOperator",
-    "BQToBQOperator",
-  ]);
+  const [operators, setOperators] = useState(Object.keys(operatorOptions));
 
   const formik = useFormik({
     initialValues: {
@@ -67,10 +49,6 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
       operator: "",
     },
     onSubmit: (values) => {
-      console.log('printing values')
-      console.log(values);
-      console.log(values.id);
-      console.log(values.operator);
       createNode(values.id, values.operator);
       onClose();
     },
@@ -86,7 +64,7 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Configure your Operator</ModalHeader>
+          <ModalHeader>Create an Operator</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <form onSubmit={formik.handleSubmit}>
@@ -100,6 +78,9 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
                     variant="filled"
                     onChange={formik.handleChange}
                     value={formik.values.id}
+                    required
+                    // validate by checking if id is already in use
+                    isInvalid={existingIds.includes(formik.values.id)}
                   />
                 </FormControl>
                 <FormControl>
@@ -114,18 +95,6 @@ function NodeSelector({ isOpen, onOpen, onClose, createNode }: ModalProps) {
                       formik.setFieldValue("operator", value?.value);
                     }}
                   />
-
-
-                  {/* <Select
-                    tagVariant="solid"
-                    options={operators.map((operator) => ({
-                      label: operator,
-                      value: operator,
-                    }))}
-                    onChange={(value) => {
-                      formik.setFieldValue("operator", value?.value);
-                    }}
-                  /> */}
                 </FormControl>
                 <Button type="submit" colorScheme="purple" width="full">
                   Create
