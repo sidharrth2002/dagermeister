@@ -1,6 +1,9 @@
-# Dagermeister
+<h1 align="center">Dagermeister</h1>
+<p align="center">Build complex Airflow DAGs using drag-and-drop</p>
 
-Build powerful and scalable DAGs using simple drag-and-drop. Data engineering has never been easier.
+---
+
+Data engineering has never been easier.
 
 <img src="./dag_demo.gif" />
 
